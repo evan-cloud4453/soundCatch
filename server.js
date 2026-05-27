@@ -1,3 +1,10 @@
+const quizData = [
+    { category: '동물!', videoId: 'sS_tTj8H8sY', startSeconds: 2, answer: '사자' },
+    { category: '애니메이션!', videoId: 'L0MK7qz13bU', startSeconds: 61, answer: '겨울왕국' },
+    { category: '게임 소리!', videoId: 'NTa6XbzcqZI', startSeconds: 0, answer: '슈퍼 마리오' }
+];
+
+
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -82,58 +89,91 @@ io.on('connection', (socket) => {
         io.to(socket.roomId).emit('update_room_info', room);
     });
 
-    // 5. 게임 시작 (방장 전용)
-    socket.on('start_game', () => {
-        const room = rooms[socket.roomId];
-        if (!room || room.host !== socket.id) return;
-
-        // 모두 레디했는지 확인
-        const allReady = Object.values(room.players).every(p => p.isReady);
-        if (!allReady) return socket.emit('error_msg', '모든 플레이어가 준비해야 합니다.');
-
+    function playNextQuestion(roomId) {
+    const room = rooms[roomId];
+    if (!room) return;
+    
+    room.state = 'WAITING_QUESTION';
+    io.to(roomId).emit('countdown_start'); // 3초 카운트다운 명령
+    
+    setTimeout(() => {
+        if(!rooms[roomId]) return;
         room.state = 'PLAYING';
-        io.to(socket.roomId).emit('game_started');
-    });
+        room.buzzedPlayer = null;
+        const qIndex = Math.floor(Math.random() * quizData.length);
+        room.currentQuestionIndex = qIndex;
+        io.to(roomId).emit('play_question', qIndex); // 문제 출제
+    }, 3000); // 3초 대기
+}
 
-    // 6. 버저 및 게임 진행 로직
-    socket.on('buzz', () => {
-        const room = rooms[socket.roomId];
-        if (!room || room.state !== 'PLAYING' || !room.players[socket.id]) return;
-        
-        room.state = 'BUZZED';
-        room.buzzedPlayer = room.players[socket.id];
-        io.to(socket.roomId).emit('buzzer_hit', room.buzzedPlayer);
-    });
+socket.on('start_game', () => {
+    const room = rooms[socket.roomId];
+    if (!room || room.host !== socket.id) return;
+    
+    const allReady = Object.values(room.players).every(p => p.isReady);
+    if (!allReady) return socket.emit('error_msg', '모든 플레이어가 준비해야 합니다.');
 
-    socket.on('judge', (isCorrect) => {
-        const room = rooms[socket.roomId];
-        if (!room || room.state !== 'BUZZED' || room.host !== socket.id) return;
+    io.to(socket.roomId).emit('game_started');
+    playNextQuestion(socket.roomId);
+});
 
-        if (isCorrect) {
-            room.players[room.buzzedPlayer.id].score += 1;
-        } else {
+socket.on('buzz', () => {
+    const room = rooms[socket.roomId];
+    if (!room || room.state !== 'PLAYING' || !room.players[socket.id]) return;
+    
+    room.state = 'BUZZED';
+    room.buzzedPlayer = room.players[socket.id];
+    io.to(socket.roomId).emit('buzzer_hit', room.buzzedPlayer);
+
+    // 10초 타이머 시작
+    room.answerTimeout = setTimeout(() => {
+        if (rooms[socket.roomId] && rooms[socket.roomId].state === 'BUZZED') {
+            // 시간 초과: 나머지 인원에게 1점씩
             Object.values(room.players).forEach(p => {
                 if (p.id !== room.buzzedPlayer.id) p.score += 1;
             });
+            io.to(socket.roomId).emit('judge_result', {
+                isCorrect: false,
+                msg: '시간 초과! 다른 플레이어들이 점수를 얻습니다.',
+                players: room.players
+            });
+            setTimeout(() => playNextQuestion(socket.roomId), 3000); // 3초 후 다음 문제
         }
-        
-        room.state = 'PLAYING'; // 다시 문제 풀 수 있는 상태로
-        io.to(socket.roomId).emit('judge_result', { 
-            isCorrect, 
-            buzzedPlayer: room.buzzedPlayer,
+    }, 10000);
+});
+
+socket.on('submit_answer', (userAnswer) => {
+    const room = rooms[socket.roomId];
+    if (!room || room.state !== 'BUZZED' || room.buzzedPlayer.id !== socket.id) return;
+    
+    clearTimeout(room.answerTimeout); // 10초 타이머 정지
+
+    const correctAnswer = quizData[room.currentQuestionIndex].answer;
+    // 띄어쓰기를 모두 제거한 후 정답 비교
+    const isCorrect = (userAnswer.replace(/\s+/g, '') === correctAnswer.replace(/\s+/g, ''));
+
+    if (isCorrect) {
+        room.players[socket.id].score += 1;
+        io.to(socket.roomId).emit('judge_result', {
+            isCorrect: true,
+            msg: `정답입니다! ${room.buzzedPlayer.name}님 +1점!`,
             players: room.players
         });
-    });
-
-    socket.on('next_question', (questionData) => {
-        const room = rooms[socket.roomId];
-        if (!room || room.host !== socket.id) return;
-        
-        room.state = 'PLAYING';
-        room.buzzedPlayer = null;
-        io.to(socket.roomId).emit('play_question', questionData);
-    });
-
+    } else {
+        Object.values(room.players).forEach(p => {
+            if (p.id !== room.buzzedPlayer.id) p.score += 1;
+        });
+        io.to(socket.roomId).emit('judge_result', {
+            isCorrect: false,
+            msg: `오답입니다! 다른 플레이어들이 점수를 얻습니다. (정답: ${correctAnswer})`,
+            players: room.players
+        });
+    }
+    
+    room.state = 'WAITING_QUESTION';
+    setTimeout(() => playNextQuestion(socket.roomId), 3000); // 3초 후 다음 문제
+});
+    
     // 접속 종료 시
     socket.on('disconnect', () => {
         console.log(`유저 퇴장: ${socket.id}`);
