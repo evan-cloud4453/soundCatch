@@ -1,0 +1,30 @@
+body { font-family: 'Malgun Gothic', sans-serif; background-color: #f4f4f9; text-align: center; margin: 0; padding: 20px; color: #333; }
+#app { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+h1 { color: #2c3e50; }
+
+.hidden { display: none !important; }
+.btn { padding: 12px 20px; font-size: 1.2rem; margin: 10px; border: none; border-radius: 10px; cursor: pointer; transition: 0.2s; font-weight: bold; }
+.btn:active { transform: scale(0.95); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.bg-blue { background-color: #1e90ff; color: white; }
+.bg-pause { background-color: #34495e; color: white; }
+.bg-smile { background-color: #f1c40f; color: #333; }
+.bg-sad { background-color: #95a5a6; color: white; }
+
+.buzzer-btn { background-color: #ff4757; color: white; width: 100%; height: 120px; font-size: 2rem; border-radius: 20px; box-shadow: 0 8px #c0392b; margin-top: 20px; }
+.buzzer-btn:active:not(:disabled) { box-shadow: 0 4px #c0392b; transform: translateY(4px); }
+
+#scoreboard { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+.score-card { padding: 10px 15px; border-radius: 8px; font-weight: bold; color: white; min-width: 60px; }
+
+#display-board { background: #ecf0f1; padding: 20px; border-radius: 10px; margin-top: 20px; }
+#judge-area { margin-top: 20px; background: #ffeaa7; padding: 15px; border-radius: 10px; }
+#youtube-player { position: absolute; width: 0; height: 0; border: none; visibility: hidden; }
+
+/* 동적 색상 클래스 */
+.color-빨강 { background-color: #ff4757; }
+.color-파랑 { background-color: #1e90ff; }
+.color-노랑 { background-color: #ffa502; color: #333; }
+.color-초록 { background-color: #2ed573; }
+.color-보라 { background-color: #9b59b6; }

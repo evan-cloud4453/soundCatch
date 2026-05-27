@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사운드 퀴즈쇼 멀티플레이</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+    <h1>🎮 사운드 퀴즈쇼</h1>
+    
+    <div id="youtube-player"></div>
+
+    <div id="setup-area">
+        <button id="btn-register" class="btn bg-blue">참가하기 (랜덤 색상 배정)</button>
+    </div>
+
+    <div id="game-area" class="hidden">
+        <div id="scoreboard"></div>
+        
+        <div class="control-panel">
+            <button id="btn-next" class="btn bg-pause">다음 문제 재생 🎵</button>
+        </div>
+
+        <div id="display-board">
+            <h2 id="category-text">대기 중...</h2>
+            <p id="status-text">게임 준비 완료!</p>
+        </div>
+
+        <button id="btn-buzz" class="btn buzzer-btn" disabled>버저 누르기! 🔴</button>
+
+        <div id="judge-area" class="hidden">
+            <h3><span id="answer-text" style="color:#d35400;"></span></h3>
+            <p>호명된 사람이 정답을 맞혔나요?</p>
+            <button id="btn-correct" class="btn bg-smile">🙂 맞혔음 (+1점)</button>
+            <button id="btn-wrong" class="btn bg-sad">☹️ 틀렸음 (나머지 +1점)</button>
+        </div>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://www.youtube.com/iframe_api"></script>
+
+<script src="data.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
