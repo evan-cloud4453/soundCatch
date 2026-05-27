@@ -4,6 +4,17 @@ let currentRoom = null;
 let ytPlayer = null;
 let currentQuestionIndex = null;
 
+// 스크립트 상단에 아래 함수를 추가합니다.
+function enterLobby() {
+    myNickname = document.getElementById('my-nickname').value.trim();
+    if (!myNickname) {
+        alert('닉네임을 입력해야 입장할 수 있습니다.');
+        return;
+    }
+    document.getElementById('welcome-msg').innerText = `${myNickname}님, 환영합니다.`;
+    switchScreen('home-screen'); // 스플래시에서 메인 로비로 이동
+}
+
 // --- 유튜브 Iframe API 초기화 ---
 function onYouTubeIframeAPIReady() {
     ytPlayer = new YT.Player('youtube-player', {
@@ -19,17 +30,15 @@ function switchScreen(screenId) {
     document.getElementById(screenId).classList.add('active');
 }
 
+
+
 // --- 로비 로직 ---
 function openJoinScreen() {
-    myNickname = document.getElementById('my-nickname').value.trim();
-    if (!myNickname) return alert('닉네임을 입력해주세요.');
     socket.emit('request_room_list');
     switchScreen('join-room-screen');
 }
 
 function openCreateScreen() {
-    myNickname = document.getElementById('my-nickname').value.trim();
-    if (!myNickname) return alert('닉네임을 입력해주세요.');
     switchScreen('create-room-screen');
 }
 
@@ -141,9 +150,14 @@ socket.on('game_started', () => {
     switchScreen('game-screen');
     renderScoreboard(currentRoom.players);
     
+    // 방장(호스트)이든 아니든 모두 버저 버튼을 볼 수 있음
+    btnBuzz.classList.remove('hidden'); 
+    
+    // 방장에게만 '다음 문제' 버튼과 'O/X 판정 버튼' 권한 부여
     if (currentRoom.host === socket.id) {
-        document.getElementById('host-controls').classList.remove('hidden');
-        btnBuzz.classList.add('hidden'); // 방장은 버저 숨김
+        document.getElementById('btn-next-question').classList.remove('hidden');
+    } else {
+        document.getElementById('btn-next-question').classList.add('hidden');
     }
 });
 
