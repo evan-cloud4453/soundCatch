@@ -142,84 +142,117 @@ function leaveRoom() {
 socket.on('error_msg', (msg) => alert(msg));
 
 // --- 인게임 로직 ---
-const btnBuzz = document.getElementById('btn-buzz');
-const statusText = document.getElementById('status-text');
-const categoryText = document.getElementById('category-text');
+// script.js 에서 // --- 인게임 로직 --- 아래에 있던 기존 코드들을 싹 지우고 아래로 교체하세요.
+
+let localCountdownInterval = null;
+let answerTimerInterval = null;
 
 socket.on('game_started', () => {
     switchScreen('game-screen');
     renderScoreboard(currentRoom.players);
-    
-    // 방장(호스트)이든 아니든 모두 버저 버튼을 볼 수 있음
-    btnBuzz.classList.remove('hidden'); 
-    
-    // 방장에게만 '다음 문제' 버튼과 'O/X 판정 버튼' 권한 부여
-    if (currentRoom.host === socket.id) {
-        document.getElementById('btn-next-question').classList.remove('hidden');
-    } else {
-        document.getElementById('btn-next-question').classList.add('hidden');
-    }
 });
 
-function renderScoreboard(players) {
-    const board = document.getElementById('game-scoreboard');
-    board.innerHTML = '';
-    Object.values(players).forEach(p => {
-        board.innerHTML += `<div class="score-badge">${p.name}: <span style="color:var(--success-color);">${p.score}점</span></div>`;
-    });
-}
-
-// 호스트: 다음 문제 출제
-document.getElementById('btn-next-question').addEventListener('click', () => {
-    const randomIndex = Math.floor(Math.random() * window.quizData.length);
-    socket.emit('next_question', randomIndex);
+// 카운트다운 화면 처리
+socket.on('countdown_start', () => {
+    const countdownText = document.getElementById('countdown-text');
+    const statusText = document.getElementById('status-text');
+    const btnBuzz = document.getElementById('btn-buzz');
+    
+    document.getElementById('answer-input-area').classList.add('hidden');
+    btnBuzz.disabled = true; // 반칙 방지를 위해 버저 잠금
+    statusText.innerText = "준비하세요...";
+    countdownText.style.display = 'block';
+    
+    let count = 3;
+    countdownText.innerText = count;
+    
+    clearInterval(localCountdownInterval);
+    localCountdownInterval = setInterval(() => {
+        count--;
+        if (count > 0) {
+            countdownText.innerText = count;
+        } else {
+            clearInterval(localCountdownInterval);
+            countdownText.style.display = 'none';
+        }
+    }, 1000);
 });
 
 socket.on('play_question', (qIndex) => {
-    currentQuestionIndex = qIndex;
     const q = window.quizData[qIndex];
+    document.getElementById('category-text').innerText = `주제: ${q.category}`;
+    document.getElementById('status-text').innerText = "🔊 소리를 듣고 버저를 누르세요!";
     
-    categoryText.innerText = `주제: ${q.category}`;
-    statusText.innerText = "🔊 소리를 듣고 버저를 누르세요!";
-    document.getElementById('judge-area').classList.add('hidden');
-    
-    if (currentRoom.host !== socket.id) btnBuzz.disabled = false;
+    document.getElementById('btn-buzz').disabled = false; // 버저 활성화
 
-    // 유튜브 지정된 시간부터 재생
     if (ytPlayer && ytPlayer.loadVideoById) {
         ytPlayer.loadVideoById({ videoId: q.videoId, startSeconds: q.startSeconds });
     }
 });
 
-// 버저 클릭
-btnBuzz.addEventListener('click', () => {
+// 버저 클릭 이벤트
+document.getElementById('btn-buzz').addEventListener('click', () => {
     socket.emit('buzz');
 });
 
 socket.on('buzzer_hit', (playerInfo) => {
-    btnBuzz.disabled = true;
-    if (ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo(); // 소리 정지
+    document.getElementById('btn-buzz').disabled = true;
+    if (ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
 
-    statusText.innerText = `✋ ${playerInfo.name}님 호명! 정답을 외치세요!`;
-    
-    if (currentRoom.host === socket.id) {
-        const q = window.quizData[currentQuestionIndex];
-        document.getElementById('answer-text').innerText = `정답: ${q.answer}`;
-        document.getElementById('judge-area').classList.remove('hidden');
-    }
-});
+    const statusText = document.getElementById('status-text');
+    const inputArea = document.getElementById('answer-input-area');
+    const typeInput = document.getElementById('type-answer');
+    const timerSpan = document.getElementById('answer-timer');
 
-// 호스트 판정
-document.getElementById('btn-correct').addEventListener('click', () => socket.emit('judge', true));
-document.getElementById('btn-wrong').addEventListener('click', () => socket.emit('judge', false));
-
-socket.on('judge_result', (data) => {
-    document.getElementById('judge-area').classList.add('hidden');
-    renderScoreboard(data.players);
-    
-    if (data.isCorrect) {
-        statusText.innerText = `✅ 정답! ${data.buzzedPlayer.name}님이 점수를 얻었습니다.`;
+    if (playerInfo.id === socket.id) {
+        // 내가 누른 경우 정답 입력창 보이기
+        statusText.innerText = "정답을 입력하세요!";
+        inputArea.classList.remove('hidden');
+        typeInput.value = '';
+        typeInput.focus();
     } else {
-        statusText.innerText = `❌ 오답! 나머지 플레이어들이 점수를 얻습니다.`;
+        // 남이 누른 경우
+        statusText.innerText = `✋ ${playerInfo.name}님이 정답을 입력 중입니다...`;
+        inputArea.classList.add('hidden');
     }
+
+    // 10초 시각적 타이머
+    let timeLeft = 10;
+    timerSpan.innerText = timeLeft;
+    clearInterval(answerTimerInterval);
+    answerTimerInterval = setInterval(() => {
+        timeLeft--;
+        timerSpan.innerText = timeLeft;
+        if (timeLeft <= 0) clearInterval(answerTimerInterval);
+    }, 1000);
 });
+
+// 정답 전송 로직 (제출 버튼 클릭 또는 엔터키)
+function submitAnswer() {
+    const ans = document.getElementById('type-answer').value;
+    if (!ans.trim()) return;
+    socket.emit('submit_answer', ans);
+    document.getElementById('answer-input-area').classList.add('hidden');
+}
+
+document.getElementById('btn-submit-answer').addEventListener('click', submitAnswer);
+document.getElementById('type-answer').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') submitAnswer();
+});
+
+// 채점 결과 수신
+socket.on('judge_result', (data) => {
+    clearInterval(answerTimerInterval);
+    document.getElementById('answer-input-area').classList.add('hidden');
+    document.getElementById('status-text').innerText = data.msg;
+    renderScoreboard(data.players);
+});
+
+// 점수판 렌더링 함수
+function renderScoreboard(players) {
+    const board = document.getElementById('game-scoreboard');
+    board.innerHTML = '';
+    Object.values(players).forEach(p => {
+        board.innerHTML += `<div class="score-badge">${p.name}: <span style="color:var(--correct-color);">${p.score}점</span></div>`;
+    });
+}
