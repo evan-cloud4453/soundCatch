@@ -1,67 +1,56 @@
 :root {
-    /* 코즈믹 테마 컬러 팔레트 */
-    --bg-deep-space: #050514;
-    --container-bg: rgba(13, 15, 38, 0.65); /* 반투명한 네뷸라 블루 */
-    --text-main: #e0e6ff; /* 별빛 화이트 */
-    --text-muted: #8a9bb8;
-    --accent-cyan: #00f0ff; /* 사이버 엑센트 (청록) */
-    --accent-purple: #b026ff; /* 네뷸라 퍼플 */
-    --border-color: rgba(255, 255, 255, 0.15);
-    --btn-bg: rgba(20, 24, 50, 0.7);
-    --btn-hover: rgba(45, 35, 110, 0.9);
-    --danger-color: #ff2a6d;
-    --success-color: #05d59e;
-    
-    /* 네온 효과 */
-    --neon-glow: 0 0 15px rgba(0, 240, 255, 0.4), inset 0 0 10px rgba(0, 240, 255, 0.1);
-    --neon-purple-glow: 0 0 20px rgba(176, 38, 255, 0.5);
+    --container-bg: rgba(10, 15, 25, 0.94); /* 더 어둡고 푸른 심연색 */
+    --text-main: #e2d2a4; /* 빛바랜 양장피색 */
+    --text-muted: #8899ac;
+    --accent-color: #3fdbff; /* 마법 서광 (청록색) */
+    --accent-hover: #00bfff;
+    --border-color: #34495e;
+    --btn-bg: #1c2833;
+    --btn-hover: #2c3e50;
+    --correct-bg: rgba(39, 174, 96, 0.2);
+    --correct-color: #2ecc71;
+    --wrong-bg: rgba(192, 57, 43, 0.2);
+    --wrong-color: #e74c3c;
+    --shadow: 0 10px 30px rgba(0,0,0,0.8);
 }
 
 body {
     font-family: 'Noto Sans KR', sans-serif;
     color: var(--text-main);
-    margin: 0;
-    padding: 0;
-    width: 100vw;
-    height: 100vh; height: 100dvh; 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden; 
-    background-color: var(--bg-deep-space);
-    background-image: 
-        radial-gradient(circle at 15% 50%, rgba(176, 38, 255, 0.15), transparent 50%),
-        radial-gradient(circle at 85% 30%, rgba(0, 240, 255, 0.15), transparent 50%),
-        url('https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=2000&auto=format&fit=crop');
+    margin: 0; padding: 20px;
+    box-sizing: border-box;
+    display: flex; justify-content: center; align-items: center;
+    height: 100vh; height: 100dvh;
+    overflow: hidden;
+    background-color: #05070a;
+    /* 1번에서 추가한 이미지 경로 적용 */
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(5, 10, 20, 0.8)), url('bg.jpg');
     background-size: cover;
     background-position: center;
 }
 
 .app-container {
     background-color: var(--container-bg);
-    border: 1px solid rgba(0, 240, 255, 0.3);
-    border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(176, 38, 255, 0.1);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    width: 90%;
-    max-width: 600px; 
-    height: 90%;
-    max-height: 800px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center; 
-    padding: 20px;
-    box-sizing: border-box;
+    border: 2px solid var(--accent-color);
+    outline: 1px solid var(--accent-color);
+    outline-offset: 4px;
+    border-radius: 2px;
+    box-shadow: var(--shadow);
+    width: 100%; max-width: 600px;
+    height: 95%; max-height: 800px;
+    display: flex; flex-direction: column;
+    padding: 40px 30px; box-sizing: border-box;
     position: relative;
+    backdrop-filter: blur(5px);
+    overflow-y: auto; /* 내용이 길면 내부에서만 스크롤되도록 */
 }
 
 h1, h2, h3 { 
-    font-family: 'Orbitron', 'Noto Sans KR', sans-serif; 
-    text-align: center; 
-    margin: 0 0 20px 0;
-    letter-spacing: 2px; 
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    color: var(--accent-color); 
+    font-weight: 700; text-align: center; 
+    letter-spacing: 1px; 
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8); 
+    margin-top: 0;
 }
 
 .title-glow {
@@ -86,62 +75,48 @@ h1, h2, h3 {
 }
 
 .btn {
-    font-family: 'Noto Sans KR', sans-serif;
-    background-color: var(--btn-bg);
-    color: var(--accent-cyan);
-    border: 1px solid var(--accent-cyan);
-    padding: 15px 20px;
-    border-radius: 8px;
+    background-color: var(--accent-color);
+    color: #0d0a08;
+    border: 1px solid #ffdc73;
+    padding: 14px 24px;
+    border-radius: 2px;
     cursor: pointer;
     font-size: 1.1em;
-    font-weight: 700;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    display: block;
-    width: 100%;
-    max-width: 350px; 
-    margin: 0 auto 15px auto;
-    text-transform: uppercase;
-    box-shadow: inset 0 0 5px rgba(0, 240, 255, 0.1);
-}
-
-.btn:hover:not(:disabled) { 
-    background-color: rgba(0, 240, 255, 0.15); 
-    box-shadow: var(--neon-glow); 
-    transform: translateY(-2px); 
-    color: #fff;
-}
-
-.btn.outline-purple { 
-    color: #e5aaff; 
-    border-color: var(--accent-purple); 
-}
-.btn.outline-purple:hover:not(:disabled) {
-    background-color: rgba(176, 38, 255, 0.15);
-    box-shadow: var(--neon-purple-glow);
-    color: #fff;
-}
-
-.input-field {
-    width: 100%; 
-    max-width: 350px;
-    padding: 15px; 
-    font-size: 1em; 
-    margin: 0 auto 20px auto; 
-    display: block;
-    text-align: center;
-    background-color: rgba(0, 0, 0, 0.4); 
-    color: #fff; 
-    border: 1px solid var(--border-color); 
-    border-radius: 8px;
-    box-sizing: border-box; 
+    font-weight: bold;
     transition: all 0.3s;
+    display: block; width: 100%;
+    margin-bottom: 15px;
+    box-shadow: inset 0 0 10px rgba(255,255,255,0.2), 0 4px 6px rgba(0,0,0,0.5);
 }
-.input-field:focus { 
-    outline: none; 
-    border-color: var(--accent-cyan); 
-    box-shadow: 0 0 10px rgba(0, 240, 255, 0.2); 
-    background-color: rgba(0, 0, 0, 0.6);
+.btn:hover:not(:disabled) { 
+    background-color: var(--accent-hover); 
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4); 
+    transform: translateY(-2px); 
 }
+.btn.outline { 
+    background-color: var(--btn-bg); 
+    color: var(--accent-color); 
+    border: 1px solid var(--accent-color); 
+    box-shadow: none; 
+}
+.btn.outline:hover:not(:disabled) { 
+    background-color: var(--btn-hover); 
+    color: #ffdc73; 
+}
+.btn:disabled { 
+    background-color: var(--btn-bg); 
+    color: var(--text-muted); 
+    border: 1px solid var(--border-color); 
+    cursor: not-allowed; transform: none; box-shadow: none;
+}
+
+/* 입력창 복구 */
+.input-field {
+    width: 100%; padding: 15px; font-size: 1.1em; margin-bottom: 15px; text-align: center;
+    background-color: rgba(0,0,0,0.5); color: var(--text-main); border: 1px solid var(--border-color); 
+    box-sizing: border-box; border-radius: 2px;
+}
+.input-field:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 8px rgba(212, 175, 55, 0.3); }
 .input-field::placeholder { color: rgba(255, 255, 255, 0.3); }
 
 .settings-panel {
