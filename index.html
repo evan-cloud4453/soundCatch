@@ -5,98 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>프로젝트 사운드 캐치</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbit&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --cosmic-bg: #0B0D17;
-            --cosmic-panel: rgba(26, 16, 37, 0.65);
-            --neon-blue: #00f3ff;
-            --neon-purple: #bc13fe;
-            --text-main: #e0e0ff;
-            --glass-border: rgba(255, 255, 255, 0.1);
-        }
-
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: var(--cosmic-bg);
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(188, 19, 254, 0.15), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(0, 243, 255, 0.15), transparent 25%);
-            color: var(--text-main);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Glassmorphism Panel */
-        .app-container {
-            background: var(--cosmic-panel);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), 0 0 15px rgba(188, 19, 254, 0.3);
-            width: 100%;
-            max-width: 600px;
-            padding: 40px;
-            text-align: center;
-            position: relative;
-        }
-
-        h1, h2 { font-family: 'Orbit', sans-serif; }
-        h1 { font-size: 3em; background: -webkit-linear-gradient(45deg, var(--neon-blue), var(--neon-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px rgba(0,243,255,0.3); }
-
-        .screen { display: none; animation: fadeIn 0.4s ease; }
-        .screen.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-
-        /* Neon Buttons */
-        .btn {
-            background: transparent;
-            color: var(--text-main);
-            border: 2px solid var(--neon-blue);
-            padding: 15px 30px;
-            font-size: 1.1em;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            font-family: 'Orbit', sans-serif;
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2) inset;
-        }
-        .btn:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 20px var(--neon-blue); }
-        .btn.purple { border-color: var(--neon-purple); box-shadow: 0 0 10px rgba(188, 19, 254, 0.2) inset; }
-        .btn.purple:hover { background: var(--neon-purple); color: #fff; box-shadow: 0 0 20px var(--neon-purple); }
-
-        .input-field {
-            width: 100%; padding: 15px; font-size: 1.1em; margin-bottom: 20px; text-align: center;
-            background: rgba(0,0,0,0.4); color: #fff; border: 1px solid var(--glass-border); 
-            border-radius: 8px; box-sizing: border-box; outline: none;
-        }
-        .input-field:focus { border-color: var(--neon-purple); box-shadow: 0 0 10px rgba(188, 19, 254, 0.5); }
-
-        /* Audio Visualizer Placeholder */
-        .visualizer {
-            height: 100px; width: 100%; background: rgba(0,0,0,0.3); border-radius: 10px;
-            margin: 20px 0; border: 1px dashed var(--neon-blue); display: flex;
-            justify-content: center; align-items: center; color: var(--neon-blue);
-        }
-
-        .timer { font-size: 2.5em; font-weight: bold; color: #ff0055; text-shadow: 0 0 15px #ff0055; margin-bottom: 20px; }
-        .player-list { text-align: left; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; max-height: 200px; overflow-y: auto; }
-        .player-item { padding: 10px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="app-container">
     <div id="title-screen" class="screen active">
         <h1>SOUND CATCH</h1>
-        <p style="color: #aaa; margin-bottom: 40px;">우주 최고의 청력을 증명하라</p>
+        <p class="subtitle">우주 최고의 청력을 증명하라</p>
         <input type="text" id="nickname-input" class="input-field" placeholder="당신의 호출명을 입력하세요">
         <button class="btn" onclick="goToRoomSelect()">시작하기 (Start)</button>
     </div>
@@ -104,36 +20,36 @@
     <div id="room-select-screen" class="screen">
         <h2>통신 채널 연결</h2>
         <button class="btn" onclick="createRoom()">새 방 생성하기</button>
-        <div style="margin: 30px 0; border-top: 1px solid var(--glass-border); position: relative;">
-            <span style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--cosmic-panel); padding: 0 10px;">OR</span>
+        <div class="divider">
+            <span>OR</span>
         </div>
         <input type="text" id="room-code-input" class="input-field" placeholder="방 코드 입력 (예: A1B2)">
         <button class="btn purple" onclick="joinRoom()">기존 방 들어가기</button>
     </div>
 
     <div id="lobby-screen" class="screen">
-        <h2>대기실: <span id="lobby-room-code" style="color: var(--neon-blue);"></span></h2>
+        <h2>대기실: <span id="lobby-room-code" class="highlight-blue"></span></h2>
         <div class="player-list" id="player-list-container"></div>
-        <div id="host-controls" style="display: none; margin-top: 20px;">
+        <div id="host-controls" class="hidden-controls">
             <button class="btn" onclick="startGame()">게임 시작</button>
         </div>
-        <p id="waiting-msg" style="color: #aaa; margin-top: 20px;">방장이 게임을 시작하기를 기다리는 중...</p>
+        <p id="waiting-msg" class="waiting-text">방장이 게임을 시작하기를 기다리는 중...</p>
     </div>
 
     <div id="game-screen" class="screen">
-        <h3 id="question-category" style="color: var(--neon-purple);">카테고리: ?</h3>
+        <h3 id="question-category" class="highlight-purple">카테고리: ?</h3>
         <div class="visualizer">
             <span>[ 오디오 파형 시각화 영역 ]</span>
         </div>
         <div id="timer-display" class="timer">15</div>
         <input type="text" id="answer-input" class="input-field" placeholder="정답을 타이핑하고 Enter를 누르세요" onkeypress="handleAnswerEnter(event)">
         <button class="btn" onclick="submitAnswer()">제출 (Enter)</button>
-        <p id="round-status" style="color: var(--neon-blue); height: 20px;"></p>
+        <p id="round-status" class="status-text"></p>
     </div>
 
     <div id="result-screen" class="screen">
-        <h1 style="font-size: 2.5em;">GAME OVER</h1>
-        <h2 id="winner-name" style="color: var(--neon-blue); margin: 30px 0;">우승자: ?</h2>
+        <h1 class="game-over-title">GAME OVER</h1>
+        <h2 id="winner-name" class="winner-text">우승자: ?</h2>
         <button class="btn" onclick="location.reload()">메인으로 돌아가기</button>
     </div>
 </div>
