@@ -121,3 +121,18 @@ socket.on('judge_result', ({ isCorrect, buzzedPlayer }) => {
         statusText.innerText = `❌ 틀렸습니다! 다른 플레이어들이 점수를 얻습니다. (다음 문제를 눌러주세요)`;
     }
 });
+
+
+// --- UI 제어 함수 ---
+// 화면 전환을 처리합니다.
+function switchScreen(screenId) {
+    // 모든 스크린에서 active 클래스 제거
+    document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+    });
+    // 요청된 스크린에 active 클래스 추가
+    document.getElementById(screenId).classList.add('active');
+}
+
+// 앞으로 여기에 서버 통신(Socket) 코드 및 
+// 방 접속, 문제 풀이 로직을 추가해 나갈 예정입니다.
