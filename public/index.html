@@ -13,13 +13,22 @@
 
 <div class="app-container">
     
-    <div id="home-screen" class="screen active">
-        <h1 class="title-glow" style="font-size: 3em;">COSMIC VOCA</h1>
-        <p style="color: var(--text-muted); margin-bottom: 4vh; font-family: 'Orbitron', sans-serif;">Interactive Multiplayer System</p>
-        <div style="width: 100%;">
-            <input type="text" id="my-nickname" placeholder="내 닉네임 입력 (필수)" class="input-field">
-            <button class="btn" onclick="openJoinScreen()">방 들어가기 (Join Room)</button>
-            <button class="btn outline-purple" onclick="openCreateScreen()">방 만들기 (Create Room)</button>
+    <div id="splash-screen" class="screen active">
+        <h1 style="font-size: 3.5em; margin-top: 20vh;">COSMIC<br>QUIZ SHOW</h1>
+        <p style="text-align: center; color: var(--text-muted); margin-bottom: 40px;">우주 퀴즈 시스템에 접속합니다.</p>
+        
+        <input type="text" id="my-nickname" placeholder="닉네임을 입력하세요" class="input-field" style="max-width: 300px; margin: 0 auto 20px auto; display: block;">
+        <button class="btn" style="max-width: 300px; margin: 0 auto;" onclick="enterLobby()">시작하기</button>
+    </div>
+
+    <div id="home-screen" class="screen">
+        <h1 style="font-size: 2.5em; margin-bottom: 5px;">MAIN LOBBY</h1>
+        <p style="text-align: center; color: var(--text-muted); margin-bottom: 40px;" id="welcome-msg">환영합니다.</p>
+        
+        <div style="max-width: 350px; margin: 0 auto; width: 100%;">
+            <button class="btn" onclick="openJoinScreen()">방 들어가기</button>
+            <button class="btn outline" onclick="openCreateScreen()">방 만들기</button>
+            <button class="btn outline" style="border-color: var(--border-color); color: var(--text-muted);" onclick="switchScreen('settings-screen')">환경 설정</button>
         </div>
     </div>
 
@@ -77,25 +86,24 @@
         <button class="btn" style="border:none; color: var(--danger-color); margin-top:10px;" onclick="leaveRoom()">나가기</button>
     </div>
 
-    <div id="game-screen" class="screen">
-        <div id="game-scoreboard" class="scoreboard"></div>
-        
-        <div id="game-status-board" class="status-board">
-            <h3 id="category-text" style="color: var(--accent-purple); margin:0 0 10px 0;">대기 중...</h3>
-            <p id="status-text" style="font-size: 1.1em; margin:0;">호스트의 문제 출제를 기다려주세요.</p>
-        </div>
-
-        <button id="btn-buzz" class="btn buzzer-btn" disabled>버저 누르기! 🔴</button>
-
-        <div id="host-controls" class="hidden settings-panel" style="margin-top: 20px; border-color: var(--accent-cyan);">
-            <p style="color: var(--accent-cyan); text-align: center; margin-top:0;">[호스트 전용 컨트롤]</p>
-            <button id="btn-next-question" class="btn outline-purple" style="font-size:0.9em; padding:10px;">다음 문제 재생 🎵</button>
+        <div id="game-screen" class="screen">
+            <div id="game-scoreboard" class="scoreboard"></div>
             
-            <div id="judge-area" class="hidden" style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
-                <p style="text-align: center; margin-top: 0;" id="answer-text">정답: ???</p>
-                <div style="display: flex; gap: 10px;">
-                    <button id="btn-correct" class="btn" style="background:#05d59e; color:#000; border:none; margin:0;">⭕ 맞힘</button>
-                    <button id="btn-wrong" class="btn" style="background:#ff2a6d; color:#fff; border:none; margin:0;">❌ 틀림</button>
+            <div class="status-board" style="background: rgba(0,0,0,0.3); border: 1px solid var(--accent-color); padding: 15px; border-radius: 2px; margin-bottom: 15px; text-align: center;">
+                <h3 id="category-text" style="margin-bottom: 10px;">대기 중...</h3>
+                <p id="status-text" style="margin: 0; font-size: 1.1em; color: var(--text-main);">기계(컴퓨터)가 다음 문제를 출제합니다.</p>
+            </div>
+    
+            <button id="btn-next-question" class="btn outline hidden" style="padding: 10px; font-size: 0.9em; margin-bottom: 15px;">▶ 다음 문제 출제하기 (방장 전용)</button>
+    
+            <button id="btn-buzz" class="buzzer-btn btn" disabled style="background-color: var(--wrong-color); color: white; height: 150px; font-size: 1.8em; border: none; border-radius: 15px;">버저 누르기!</button>
+    
+            <div id="judge-area" class="hidden" style="margin-top: 20px; text-align: center; background: rgba(0,0,0,0.5); padding: 20px; border-radius: 2px; border: 1px solid var(--border-color);">
+                <h2 id="answer-text" style="color: var(--correct-color); margin-bottom: 15px;">정답: ???</h2>
+                <p style="margin-bottom: 15px;">기계가 알려준 정답과 일치합니까?</p>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button id="btn-correct" class="btn" style="background-color: var(--correct-color); border: none; color: #000; margin-bottom: 0;">🙂 맞힘 (+1점)</button>
+                    <button id="btn-wrong" class="btn" style="background-color: var(--wrong-color); border: none; color: #fff; margin-bottom: 0;">☹️ 틀림 (나머지 +1점)</button>
                 </div>
             </div>
         </div>
