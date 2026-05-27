@@ -192,3 +192,72 @@ input[type=range]::-webkit-slider-thumb {
     .btn { padding: 12px 15px; font-size: 1em; margin-bottom: 12px; }
     .input-field { padding: 12px; font-size: 0.95em; margin-bottom: 15px; }
 }
+
+/* --- 아래부터 추가된 멀티플레이 UI 스타일 --- */
+
+/* 스크롤 가능한 박스 (방 목록, 유저 목록용) */
+.scroll-box {
+    width: 100%;
+    max-width: 400px;
+    max-height: 40vh;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    padding: 10px;
+    box-sizing: border-box;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* 방 목록 아이템 */
+.room-item {
+    background: var(--btn-bg);
+    border: 1px solid var(--border-color);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.room-item:hover {
+    background: rgba(0, 240, 255, 0.1);
+    border-color: var(--accent-cyan);
+    box-shadow: var(--neon-glow);
+}
+.room-item-title { font-weight: bold; font-size: 1.1em; color: var(--text-main); margin-bottom: 5px; }
+.room-item-info { font-size: 0.85em; color: var(--text-muted); }
+
+/* 셀렉트 박스 */
+.select-field {
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    border: 1px solid var(--border-color);
+    padding: 8px;
+    border-radius: 5px;
+    font-family: 'Noto Sans KR', sans-serif;
+    outline: none;
+}
+
+/* 대기실 유저 그리드 */
+.player-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;}
+.player-card {
+    background: rgba(255,255,255,0.05);
+    border-left: 4px solid var(--text-muted);
+    padding: 12px 15px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.player-card.ready { border-left-color: var(--success-color); background: rgba(5, 213, 158, 0.1); }
+.player-card.host { border-left-color: var(--accent-purple); }
+
+/* 게임 화면 요소 */
+.scoreboard { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; width: 100%;}
+.score-badge { padding: 8px 12px; background: rgba(0,0,0,0.5); border-radius: 20px; border: 1px solid var(--border-color); font-size: 0.9em; font-weight: bold; }
+.status-board { width: 100%; max-width: 400px; text-align: center; background: rgba(0, 0, 0, 0.4); padding: 20px; border-radius: 12px; border: 1px solid var(--accent-purple); box-sizing: border-box; margin-bottom: 20px; box-shadow: inset 0 0 15px rgba(176, 38, 255, 0.1); }
+.buzzer-btn { height: 120px; font-size: 1.5em; border-radius: 20px; background: var(--danger-color); border: none; box-shadow: 0 8px #9e0031, inset 0 0 20px rgba(255,255,255,0.3); color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.5); margin-top: 10px; max-width: 400px;}
+.buzzer-btn:active:not(:disabled) { transform: translateY(6px); box-shadow: 0 2px #9e0031; }
+.hidden { display: none !important; }
