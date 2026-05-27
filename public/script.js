@@ -1,138 +1,182 @@
-const socket = io();
-let ytPlayer;
-let myPlayerInfo = null;
-let currentQuestionIndex = null;
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+const path = require('path');
 
-// 유튜브 Iframe API 초기화 (index.html에서 라이브러리 로드 후 자동 실행됨)
-function onYouTubeIframeAPIReady() {
-    ytPlayer = new YT.Player('youtube-player', {
-        height: '0',
-        width: '0',
-        playerVars: { 'autoplay': 0, 'controls': 0 },
-        events: {
-            'onReady': () => console.log('유튜브 플레이어 로드 완료')
-        }
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+
+app.use(express.static(path.join(__dirname, 'public')));
+
+// 방 및 플레이어 데이터 관리
+let rooms = {}; // { roomId: { name, host, maxPlayers, mode, password, targetScore, players: {}, state, buzzedPlayer } }
+
+io.on('connection', (socket) => {
+    console.log(`유저 접속: ${socket.id}`);
+
+    // 1. 방 목록 전송 (로비 접속 시)
+    socket.on('request_room_list', () => {
+        const roomList = Object.keys(rooms).map(roomId => ({
+            id: roomId,
+            name: rooms[roomId].name,
+            mode: rooms[roomId].mode,
+            currentPlayers: Object.keys(rooms[roomId].players).length,
+            maxPlayers: rooms[roomId].maxPlayers,
+            hasPassword: !!rooms[roomId].password
+        }));
+        socket.emit('update_room_list', roomList);
     });
-}
 
-// UI 엘리먼트
-const btnRegister = document.getElementById('btn-register');
-const setupArea = document.getElementById('setup-area');
-const gameArea = document.getElementById('game-area');
-const scoreboard = document.getElementById('scoreboard');
-const btnNext = document.getElementById('btn-next');
-const btnBuzz = document.getElementById('btn-buzz');
-const judgeArea = document.getElementById('judge-area');
-const categoryText = document.getElementById('category-text');
-const statusText = document.getElementById('status-text');
-const answerText = document.getElementById('answer-text');
-
-// 1. 등록하기
-btnRegister.addEventListener('click', () => {
-    socket.emit('register');
-});
-
-// 2. 서버 통신: 플레이어 업데이트
-socket.on('update_players', (players) => {
-    // 내가 등록 성공했는지 확인
-    if (!myPlayerInfo) {
-        const me = players.find(p => p.id === socket.id);
-        if (me) {
-            myPlayerInfo = me;
-            setupArea.classList.add('hidden');
-            gameArea.classList.remove('hidden');
-            btnBuzz.innerText = `${me.color} 버저!`;
-        }
-    }
-
-    // 스코어보드 다시 그리기
-    scoreboard.innerHTML = '';
-    players.forEach(p => {
-        const card = document.createElement('div');
-        card.className = `score-card color-${p.color}`;
-        card.innerText = `${p.color}: ${p.score}점`;
-        scoreboard.appendChild(card);
+    // 2. 방 만들기
+    socket.on('create_room', (data) => {
+        const roomId = 'room_' + Date.now(); // 고유 방 ID 생성
+        rooms[roomId] = {
+            id: roomId,
+            name: data.name,
+            host: socket.id,
+            maxPlayers: parseInt(data.maxPlayers),
+            mode: data.mode,
+            password: data.password,
+            targetScore: parseInt(data.targetScore),
+            players: {},
+            state: 'WAITING', // WAITING, PLAYING, BUZZED
+            buzzedPlayer: null
+        };
+        socket.emit('room_created', roomId);
+        io.emit('update_room_list', getRoomList()); // 모든 유저에게 방 목록 갱신
     });
-});
 
-socket.on('error_msg', (msg) => alert(msg));
+    // 3. 방 들어가기
+    socket.on('join_room', (data) => {
+        const room = rooms[data.roomId];
+        if (!room) return socket.emit('error_msg', '존재하지 않는 방입니다.');
+        if (room.password && room.password !== data.password) return socket.emit('error_msg', '비밀번호가 틀렸습니다.');
+        if (Object.keys(room.players).length >= room.maxPlayers) return socket.emit('error_msg', '방이 가득 찼습니다.');
+        if (room.state !== 'WAITING') return socket.emit('error_msg', '이미 게임이 진행 중인 방입니다.');
 
-// 3. 문제 출제 (누구든 '다음 문제' 버튼을 누르면 서버에 요청)
-btnNext.addEventListener('click', () => {
-    const randomIndex = Math.floor(Math.random() * window.quizData.length);
-    socket.emit('next_question', randomIndex);
-});
+        // 기존 방이 있다면 나가기
+        leaveCurrentRoom(socket);
 
-// 서버로부터 문제 재생 명령 받음
-socket.on('play_question', (qIndex) => {
-    currentQuestionIndex = qIndex;
-    const q = window.quizData[qIndex];
-    
-    categoryText.innerText = `주제: ${q.category}`;
-    statusText.innerText = "🔊 소리를 듣고 버저를 누르세요!";
-    judgeArea.classList.add('hidden');
-    btnBuzz.disabled = false;
+        // 새 방 접속
+        socket.join(data.roomId);
+        room.players[socket.id] = {
+            id: socket.id,
+            name: data.playerName,
+            isHost: room.host === socket.id,
+            isReady: room.host === socket.id, // 방장은 항상 레디 상태
+            score: 0
+        };
+        socket.roomId = data.roomId;
 
-    // 유튜브 지정된 시간부터 재생
-    if (ytPlayer && ytPlayer.loadVideoById) {
-        ytPlayer.loadVideoById({
-            videoId: q.videoId,
-            startSeconds: q.startSeconds
+        io.to(data.roomId).emit('update_room_info', room);
+        io.emit('update_room_list', getRoomList());
+    });
+
+    // 4. 레디(준비) 상태 변경
+    socket.on('toggle_ready', () => {
+        const room = rooms[socket.roomId];
+        if (!room || room.players[socket.id].isHost) return;
+        
+        room.players[socket.id].isReady = !room.players[socket.id].isReady;
+        io.to(socket.roomId).emit('update_room_info', room);
+    });
+
+    // 5. 게임 시작 (방장 전용)
+    socket.on('start_game', () => {
+        const room = rooms[socket.roomId];
+        if (!room || room.host !== socket.id) return;
+
+        // 모두 레디했는지 확인
+        const allReady = Object.values(room.players).every(p => p.isReady);
+        if (!allReady) return socket.emit('error_msg', '모든 플레이어가 준비해야 합니다.');
+
+        room.state = 'PLAYING';
+        io.to(socket.roomId).emit('game_started');
+    });
+
+    // 6. 버저 및 게임 진행 로직
+    socket.on('buzz', () => {
+        const room = rooms[socket.roomId];
+        if (!room || room.state !== 'PLAYING' || !room.players[socket.id]) return;
+        
+        room.state = 'BUZZED';
+        room.buzzedPlayer = room.players[socket.id];
+        io.to(socket.roomId).emit('buzzer_hit', room.buzzedPlayer);
+    });
+
+    socket.on('judge', (isCorrect) => {
+        const room = rooms[socket.roomId];
+        if (!room || room.state !== 'BUZZED' || room.host !== socket.id) return;
+
+        if (isCorrect) {
+            room.players[room.buzzedPlayer.id].score += 1;
+        } else {
+            Object.values(room.players).forEach(p => {
+                if (p.id !== room.buzzedPlayer.id) p.score += 1;
+            });
+        }
+        
+        room.state = 'PLAYING'; // 다시 문제 풀 수 있는 상태로
+        io.to(socket.roomId).emit('judge_result', { 
+            isCorrect, 
+            buzzedPlayer: room.buzzedPlayer,
+            players: room.players
         });
-    }
-});
-
-// 4. 버저 누르기
-btnBuzz.addEventListener('click', () => {
-    socket.emit('buzz');
-});
-
-// 누군가 버저를 가장 먼저 눌렀을 때
-socket.on('buzzer_hit', (playerInfo) => {
-    btnBuzz.disabled = true; // 버저 잠금
-    
-    // 재생 중인 소리 중지
-    if (ytPlayer && ytPlayer.pauseVideo) {
-        ytPlayer.pauseVideo();
-    }
-
-    statusText.innerText = `✋ ${playerInfo.color} 플레이어 호명! 정답을 외치세요!`;
-    
-    // 모두에게 판정 화면 노출
-    const q = window.quizData[currentQuestionIndex];
-    answerText.innerText = `정답: ${q.answer}`;
-    judgeArea.classList.remove('hidden');
-});
-
-// 5. 정답 판정 (누구든 O/X 버튼을 누르면 서버에 전송)
-document.getElementById('btn-correct').addEventListener('click', () => {
-    socket.emit('judge', true);
-});
-document.getElementById('btn-wrong').addEventListener('click', () => {
-    socket.emit('judge', false);
-});
-
-// 판정 결과 수신
-socket.on('judge_result', ({ isCorrect, buzzedPlayer }) => {
-    judgeArea.classList.add('hidden');
-    if (isCorrect) {
-        statusText.innerText = `✅ 정답입니다! ${buzzedPlayer.color} 점수 획득! (다음 문제를 눌러주세요)`;
-    } else {
-        statusText.innerText = `❌ 틀렸습니다! 다른 플레이어들이 점수를 얻습니다. (다음 문제를 눌러주세요)`;
-    }
-});
-
-
-// --- UI 제어 함수 ---
-// 화면 전환을 처리합니다.
-function switchScreen(screenId) {
-    // 모든 스크린에서 active 클래스 제거
-    document.querySelectorAll('.screen').forEach(screen => {
-        screen.classList.remove('active');
     });
-    // 요청된 스크린에 active 클래스 추가
-    document.getElementById(screenId).classList.add('active');
-}
 
-// 앞으로 여기에 서버 통신(Socket) 코드 및 
-// 방 접속, 문제 풀이 로직을 추가해 나갈 예정입니다.
+    socket.on('next_question', (questionData) => {
+        const room = rooms[socket.roomId];
+        if (!room || room.host !== socket.id) return;
+        
+        room.state = 'PLAYING';
+        room.buzzedPlayer = null;
+        io.to(socket.roomId).emit('play_question', questionData);
+    });
+
+    // 접속 종료 시
+    socket.on('disconnect', () => {
+        console.log(`유저 퇴장: ${socket.id}`);
+        leaveCurrentRoom(socket);
+    });
+
+    // --- 유틸 함수 ---
+    function leaveCurrentRoom(socket) {
+        if (!socket.roomId || !rooms[socket.roomId]) return;
+        const room = rooms[socket.roomId];
+        
+        delete room.players[socket.id];
+        socket.leave(socket.roomId);
+
+        // 남은 인원이 없으면 방 폭파, 아니면 호스트 승계
+        if (Object.keys(room.players).length === 0) {
+            delete rooms[socket.roomId];
+        } else if (room.host === socket.id) {
+            const nextHostId = Object.keys(room.players)[0];
+            room.host = nextHostId;
+            room.players[nextHostId].isHost = true;
+            room.players[nextHostId].isReady = true;
+            io.to(socket.roomId).emit('update_room_info', room);
+        } else {
+            io.to(socket.roomId).emit('update_room_info', room);
+        }
+        io.emit('update_room_list', getRoomList());
+        socket.roomId = null;
+    }
+
+    function getRoomList() {
+        return Object.keys(rooms).map(roomId => ({
+            id: roomId,
+            name: rooms[roomId].name,
+            mode: rooms[roomId].mode,
+            currentPlayers: Object.keys(rooms[roomId].players).length,
+            maxPlayers: rooms[roomId].maxPlayers,
+            hasPassword: !!rooms[roomId].password
+        }));
+    }
+});
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`서버가 포트 ${PORT}에서 실행 중입니다.`);
+});
