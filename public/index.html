@@ -14,22 +14,38 @@
 <div class="app-container">
     
     <div id="splash-screen" class="screen active">
-        <h1 style="font-size: 3.5em; margin-top: 20vh;">COSMIC<br>QUIZ SHOW</h1>
-        <p style="text-align: center; color: var(--text-muted); margin-bottom: 40px;">우주 퀴즈 시스템에 접속합니다.</p>
-        
-        <input type="text" id="my-nickname" placeholder="닉네임을 입력하세요" class="input-field" style="max-width: 300px; margin: 0 auto 20px auto; display: block;">
-        <button class="btn" style="max-width: 300px; margin: 0 auto;" onclick="enterLobby()">시작하기</button>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+            <h1 class="title-glow">COSMIC<br>QUIZ</h1>
+            <p style="text-align: center; color: var(--text-muted); font-size: 0.9em; margin-bottom: 50px;">Multiplayer Sound Quiz System</p>
+            
+            <div style="background: rgba(0,0,0,0.2); padding: 25px 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);">
+                <input type="text" id="my-nickname" placeholder="사용할 닉네임 입력" class="input-field" style="margin-bottom: 15px;">
+                <button class="btn" style="margin-bottom: 0;" onclick="enterLobby()">접속하기 (CONNECT)</button>
+            </div>
+        </div>
     </div>
 
     <div id="home-screen" class="screen">
-        <h1 style="font-size: 2.5em; margin-bottom: 5px;">MAIN LOBBY</h1>
-        <p style="text-align: center; color: var(--text-muted); margin-bottom: 40px;" id="welcome-msg">환영합니다.</p>
-        
-        <div style="max-width: 350px; margin: 0 auto; width: 100%;">
-            <button class="btn" onclick="openJoinScreen()">방 들어가기</button>
-            <button class="btn outline" onclick="openCreateScreen()">방 만들기</button>
-            <button class="btn outline" style="border-color: var(--border-color); color: var(--text-muted);" onclick="switchScreen('settings-screen')">환경 설정</button>
+        <div style="text-align: center; margin-bottom: 30px; margin-top: 20px;">
+            <h2 style="color: #fff; font-size: 1.5em; letter-spacing: 2px;">LOBBY</h2>
+            <p id="welcome-msg" style="color: var(--neon-cyan); font-size: 0.95em;">환영합니다.</p>
         </div>
+        
+        <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; gap: 5px;">
+            <button class="btn" onclick="openJoinScreen()">
+                <span style="display:block; font-size: 1.2em; margin-bottom: 5px;">방 들어가기</span>
+                <span style="font-size: 0.7em; color: var(--text-muted); font-weight: normal;">생성된 방 목록에서 게임 참여</span>
+            </button>
+            
+            <button class="btn outline-purple" onclick="openCreateScreen()">
+                <span style="display:block; font-size: 1.2em; margin-bottom: 5px;">방 만들기</span>
+                <span style="font-size: 0.7em; color: var(--text-muted); font-weight: normal;">새로운 게임 세션 호스팅</span>
+            </button>
+        </div>
+
+        <button class="btn" style="background: transparent; border-color: transparent; color: var(--text-muted); font-size: 0.9em; text-transform: none; margin-bottom: 0;" onclick="switchScreen('settings-screen')">
+            ⚙️ 환경 설정
+        </button>
     </div>
 
     <div id="join-room-screen" class="screen">
