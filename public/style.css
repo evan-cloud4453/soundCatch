@@ -21,7 +21,7 @@ body {
     background-color: #050514;
     background-image: 
         linear-gradient(rgba(5, 5, 20, 0.5), rgba(15, 10, 35, 0.8)), /* 가독성을 위한 어두운 그라데이션 */
-        url('bg.jpg'); /* 여기에 실제 이미지 파일 경로 입력 */
+        url('https://png.pngtree.com/background/20210712/original/pngtree-mysterious-cosmic-space-galaxy-nebula-background-picture-image_1179108.jpg'); /* 여기에 실제 이미지 파일 경로 입력 */
     background-size: cover;
     background-position: center;
 }
