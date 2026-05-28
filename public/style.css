@@ -1,122 +1,111 @@
 :root {
-    --container-bg: rgba(10, 15, 25, 0.94); /* 더 어둡고 푸른 심연색 */
-    --text-main: #e2d2a4; /* 빛바랜 양장피색 */
-    --text-muted: #8899ac;
-    --accent-color: #3fdbff; /* 마법 서광 (청록색) */
-    --accent-hover: #00bfff;
-    --border-color: #34495e;
-    --btn-bg: #1c2833;
-    --btn-hover: #2c3e50;
-    --correct-bg: rgba(39, 174, 96, 0.2);
-    --correct-color: #2ecc71;
-    --wrong-bg: rgba(192, 57, 43, 0.2);
-    --wrong-color: #e74c3c;
-    --shadow: 0 10px 30px rgba(0,0,0,0.8);
+    /* 우주 배경에 맞춘 네온/글래스 팔레트 */
+    --glass-bg: rgba(15, 15, 35, 0.65); /* 반투명한 딥블루 패널 */
+    --neon-cyan: #00f0ff;
+    --neon-purple: #b026ff;
+    --text-main: #e0e6ff;
+    --text-muted: #7a8ba3;
+    --danger: #ff2a6d;
+    --success: #05d59e;
 }
 
 body {
     font-family: 'Noto Sans KR', sans-serif;
     color: var(--text-main);
-    margin: 0; padding: 20px;
-    box-sizing: border-box;
+    margin: 0; padding: 0;
+    width: 100vw; height: 100vh; height: 100dvh;
     display: flex; justify-content: center; align-items: center;
-    height: 100vh; height: 100dvh;
-    overflow: hidden;
-    background-color: #05070a;
-    /* 1번에서 추가한 이미지 경로 적용 */
-    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(5, 10, 20, 0.8)), url('bg.jpg');
+    overflow: hidden; /* 스크롤 완벽 차단 */
+    
+    /* 🌠 보내주신 우주 사진 배경 적용 */
+    background-color: #050514;
+    background-image: 
+        linear-gradient(rgba(5, 5, 20, 0.5), rgba(15, 10, 35, 0.8)), /* 가독성을 위한 어두운 그라데이션 */
+        url('bg.jpg'); /* 여기에 실제 이미지 파일 경로 입력 */
     background-size: cover;
     background-position: center;
 }
 
+/* 세련된 실제 앱 느낌의 유리 컨테이너 */
 .app-container {
-    background-color: var(--container-bg);
-    border: 2px solid var(--accent-color);
-    outline: 1px solid var(--accent-color);
-    outline-offset: 4px;
-    border-radius: 2px;
-    box-shadow: var(--shadow);
-    width: 100%; max-width: 600px;
-    height: 95%; max-height: 800px;
+    background: var(--glass-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 240, 255, 0.05);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    
+    width: 92%; max-width: 480px; /* 모바일에 더 최적화된 비율 */
+    height: 92%; max-height: 850px;
+    padding: 35px 25px; box-sizing: border-box;
     display: flex; flex-direction: column;
-    padding: 40px 30px; box-sizing: border-box;
     position: relative;
-    backdrop-filter: blur(5px);
-    overflow-y: auto; /* 내용이 길면 내부에서만 스크롤되도록 */
+    overflow-y: auto;
 }
 
 h1, h2, h3 { 
-    color: var(--accent-color); 
-    font-weight: 700; text-align: center; 
+    font-family: 'Orbitron', 'Noto Sans KR', sans-serif; 
+    text-align: center; margin: 0 0 15px 0;
     letter-spacing: 1px; 
-    text-shadow: 0 2px 4px rgba(0,0,0,0.8); 
-    margin-top: 0;
 }
 
+/* 메인 타이틀 네온 글로우 */
 .title-glow {
+    font-size: 2.8em;
+    background: linear-gradient(to right, var(--neon-cyan), var(--neon-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+}
+
+/* 세련된 버튼 (네온 테두리 & 반투명) */
+.btn {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--neon-cyan);
+    border: 1px solid rgba(0, 240, 255, 0.4);
+    padding: 16px; border-radius: 14px;
+    font-size: 1.1em; font-weight: 700;
+    cursor: pointer; transition: 0.3s;
+    width: 100%; margin-bottom: 15px;
+    text-transform: uppercase; letter-spacing: 1px;
+}
+.btn:hover:not(:disabled) {
+    background: rgba(0, 240, 255, 0.15);
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+    color: #fff; transform: translateY(-2px);
+}
+.btn.outline-purple {
+    color: #e5aaff; border-color: rgba(176, 38, 255, 0.5);
+}
+.btn.outline-purple:hover:not(:disabled) {
+    background: rgba(176, 38, 255, 0.15);
+    box-shadow: 0 0 15px rgba(176, 38, 255, 0.4);
     color: #fff;
-    text-shadow: 0 0 10px var(--accent-cyan), 0 0 20px var(--accent-purple);
 }
 
-.screen { 
-    display: none; 
-    animation: cosmicFadeIn 0.5s ease forwards; 
-    width: 100%;
-    height: 100%;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+/* 입력창 */
+.input-field {
+    width: 100%; padding: 16px; font-size: 1em; margin-bottom: 20px; 
+    text-align: center; box-sizing: border-box; 
+    background: rgba(0, 0, 0, 0.4); 
+    color: #fff; border: 1px solid rgba(255,255,255,0.15); 
+    border-radius: 12px; transition: 0.3s;
 }
+.input-field:focus { 
+    outline: none; border-color: var(--neon-cyan); 
+    background: rgba(0, 0, 0, 0.6);
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); 
+}
+.input-field::placeholder { color: rgba(255, 255, 255, 0.3); }
+
+/* 스크린 전환 애니메이션 */
+.screen { display: none; flex-direction: column; height: 100%; animation: cosmicFadeIn 0.5s ease; }
 .screen.active { display: flex; }
-
 @keyframes cosmicFadeIn { 
-    from { opacity: 0; transform: scale(0.95) translateY(10px); } 
+    from { opacity: 0; transform: scale(0.97) translateY(10px); } 
     to { opacity: 1; transform: scale(1) translateY(0); } 
 }
-
-.btn {
-    background-color: var(--accent-color);
-    color: #0d0a08;
-    border: 1px solid #ffdc73;
-    padding: 14px 24px;
-    border-radius: 2px;
-    cursor: pointer;
-    font-size: 1.1em;
-    font-weight: bold;
-    transition: all 0.3s;
-    display: block; width: 100%;
-    margin-bottom: 15px;
-    box-shadow: inset 0 0 10px rgba(255,255,255,0.2), 0 4px 6px rgba(0,0,0,0.5);
-}
-.btn:hover:not(:disabled) { 
-    background-color: var(--accent-hover); 
-    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4); 
-    transform: translateY(-2px); 
-}
-.btn.outline { 
-    background-color: var(--btn-bg); 
-    color: var(--accent-color); 
-    border: 1px solid var(--accent-color); 
-    box-shadow: none; 
-}
-.btn.outline:hover:not(:disabled) { 
-    background-color: var(--btn-hover); 
-    color: #ffdc73; 
-}
-.btn:disabled { 
-    background-color: var(--btn-bg); 
-    color: var(--text-muted); 
-    border: 1px solid var(--border-color); 
-    cursor: not-allowed; transform: none; box-shadow: none;
-}
-
-/* 입력창 복구 */
-.input-field {
-    width: 100%; padding: 15px; font-size: 1.1em; margin-bottom: 15px; text-align: center;
-    background-color: rgba(0,0,0,0.5); color: var(--text-main); border: 1px solid var(--border-color); 
-    box-sizing: border-box; border-radius: 2px;
-}
-.input-field:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 8px rgba(212, 175, 55, 0.3); }
 .input-field::placeholder { color: rgba(255, 255, 255, 0.3); }
 
 .settings-panel {
